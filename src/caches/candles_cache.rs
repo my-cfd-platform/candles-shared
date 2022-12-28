@@ -1,24 +1,17 @@
 use std::collections::HashMap;
-
 use chrono::{DateTime, Utc};
-
-use crate::models::{candle_price::CandlePrice, candle::BidAskCandle, candle_type::CandleType};
+use crate::models::{candle::BidAskCandle, candle_price::CandlePrice, candle_type::CandleType};
 
 pub struct CandlesCache {
     candles_by_ids: HashMap<String, BidAskCandle>,
-    pub candle_types: [CandleType; 4],
+    pub candle_types: Vec<CandleType>,
 }
 
 impl CandlesCache {
-    pub fn new() -> Self {
+    pub fn new(candle_types: Vec<CandleType>) -> Self {
         Self {
             candles_by_ids: HashMap::new(),
-            candle_types: [
-                CandleType::Minute,
-                CandleType::Hour,
-                CandleType::Day,
-                CandleType::Month,
-            ],
+            candle_types,
         }
     }
 
@@ -46,8 +39,8 @@ impl CandlesCache {
         ask: f64,
     ) {
         for candle_type in self.candle_types.iter() {
-            let candle_date = candle_type.candle_date(datetime);
-            let id = BidAskCandle::generate_id(instrument, candle_type, candle_date);
+            let candle_datetime = candle_type.candle_date(datetime);
+            let id = BidAskCandle::generate_id(instrument, candle_type, candle_datetime);
             let candle = self.candles_by_ids.get_mut(&id);
 
             if let Some(candle) = candle {
@@ -68,19 +61,19 @@ impl CandlesCache {
                         bid_price: CandlePrice::new(datetime, bid),
                         candle_type: candle_type.clone(),
                         instrument: instrument.to_owned(),
-                        datetime: candle_date,
+                        datetime: candle_datetime,
                     },
                 );
             }
         }
     }
 
-    pub fn get_after(&self, date: DateTime<Utc>) -> Option<Vec<BidAskCandle>> {
+    pub fn get_after_cloned(&self, datetime: DateTime<Utc>) -> Option<Vec<BidAskCandle>> {
         if self.candles_by_ids.len() == 0 {
             return None;
         }
 
-        let candle_dates = self.calculate_candle_dates(date);
+        let candle_dates = self.calculate_candle_dates(datetime);
 
         let candles = self
             .candles_by_ids
@@ -99,8 +92,8 @@ impl CandlesCache {
         Some(candles)
     }
 
-    pub fn remove_after(&mut self, date: DateTime<Utc>) -> i32 {
-        let dates = self.calculate_candle_dates(date);
+    pub fn remove_after(&mut self, datetime: DateTime<Utc>) -> i32 {
+        let dates = self.calculate_candle_dates(datetime);
         let mut removed_count = 0;
 
         self.candles_by_ids.retain(|_id, candle| {
