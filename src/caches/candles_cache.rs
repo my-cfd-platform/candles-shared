@@ -21,7 +21,7 @@ impl CandlesCache {
 
     pub fn insert(&mut self, candle: BidAskCandle) {
         println!(
-            "insert candle {}: {} {}; {} total candles",
+            "insert candle {}: {} {}; {} total count",
             candle.instrument,
             candle.datetime.to_rfc3339(),
             candle.get_id(),
