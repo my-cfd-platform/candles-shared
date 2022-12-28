@@ -4,12 +4,12 @@ use chrono::{DateTime, Utc};
 
 use crate::models::{candle_price::CandlePrice, candle::BidAskCandle, candle_type::CandleType};
 
-pub struct CandlesQueue {
+pub struct CandlesCache {
     candles_by_ids: HashMap<String, BidAskCandle>,
     pub candle_types: [CandleType; 4],
 }
 
-impl CandlesQueue {
+impl CandlesCache {
     pub fn new() -> Self {
         Self {
             candles_by_ids: HashMap::new(),
