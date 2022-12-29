@@ -18,7 +18,7 @@ impl CandlePricesCache {
     }
 
     pub fn update(&mut self, datetime: DateTime<Utc>, rate: f64){
-        let candle_date = self.candle_type.candle_date(datetime);
+        let candle_date = self.candle_type.get_start_date(datetime);
         let timestamp_sec = candle_date.timestamp();
         let target_candle = self.prices_by_date.get_mut(&timestamp_sec);
 

@@ -44,6 +44,6 @@ impl CandlePrice {
     }
 
     pub fn get_candle_date(&self, candle_type: CandleType) -> DateTime<Utc> {
-        candle_type.candle_date(self.datetime)
+        candle_type.get_start_date(self.datetime)
     }
 }

@@ -39,7 +39,7 @@ impl CandlesCache {
         ask: f64,
     ) {
         for candle_type in self.candle_types.iter() {
-            let candle_datetime = candle_type.candle_date(datetime);
+            let candle_datetime = candle_type.get_start_date(datetime);
             let id = BidAskCandle::generate_id(instrument, candle_type, candle_datetime);
             let candle = self.candles_by_ids.get_mut(&id);
 
@@ -114,7 +114,7 @@ impl CandlesCache {
         let mut dates = Vec::with_capacity(self.candle_types.len());
 
         for candle_type in self.candle_types.iter() {
-            let candle_date = candle_type.candle_date(datetime);
+            let candle_date = candle_type.get_start_date(datetime);
             let index = candle_type.to_owned() as usize;
             dates.insert(index, candle_date);
         }

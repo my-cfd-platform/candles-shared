@@ -25,7 +25,7 @@ impl BidAskCandle {
             "{}{}{}",
             candle_type.to_owned() as u8,
             instrument.to_string(),
-            candle_type.candle_date(datetime).timestamp(),
+            candle_type.get_start_date(datetime).timestamp(),
         )
     }
 
