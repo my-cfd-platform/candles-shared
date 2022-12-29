@@ -68,6 +68,16 @@ impl CandleType {
         dates
     }
 
+    pub fn get_dates_count(&self, datetime_from: DateTime<Utc>, datetime_to: DateTime<Utc>) -> usize {
+        let duration = self.get_duration(datetime_from);
+        let from = self.get_start_date(datetime_from);
+        let to = self.get_start_date(datetime_to);
+        let duration_between = to - from;
+        let count = duration_between.num_seconds() / duration.num_seconds();
+
+        count as usize
+    }
+
     pub fn get_duration(&self, datetime: DateTime<Utc>) -> Duration {
         match self {
             CandleType::Minute => Duration::seconds(60),
@@ -100,7 +110,57 @@ mod tests {
     use std::collections::HashSet;
 
     use crate::models::candle_type::CandleType;
-    use chrono::{DateTime, Duration, TimeZone, Utc, Datelike, Timelike};
+    use chrono::{DateTime, Datelike, Duration, TimeZone, Timelike, Utc};
+
+    #[tokio::test]
+    async fn count_minute() {
+        let candle_type = CandleType::Minute;
+        let duration = Duration::minutes(15);
+        let from: DateTime<Utc> = Utc.with_ymd_and_hms(2000, 1, 1, 0, 0, 0).unwrap();
+        let to: DateTime<Utc> = from + duration;
+
+        let count = candle_type.get_dates_count(from, to);
+
+        assert_eq!(count, duration.num_minutes() as usize);
+    }
+
+    #[tokio::test]
+    async fn count_hour() {
+        let candle_type = CandleType::Hour;
+        let duration = Duration::hours(15);
+        let from: DateTime<Utc> = Utc.with_ymd_and_hms(2000, 1, 1, 0, 0, 0).unwrap();
+        let to: DateTime<Utc> = from + duration;
+
+        let count = candle_type.get_dates_count(from, to);
+
+        assert_eq!(count, duration.num_hours() as usize);
+    }
+
+    #[tokio::test]
+    async fn count_day() {
+        let candle_type = CandleType::Day;
+        let duration = Duration::days(15);
+        let from: DateTime<Utc> = Utc.with_ymd_and_hms(2000, 1, 1, 0, 0, 0).unwrap();
+        let to: DateTime<Utc> = from + duration;
+
+        let count = candle_type.get_dates_count(from, to);
+
+        assert_eq!(count, duration.num_days() as usize);
+    }
+
+    
+    #[tokio::test]
+    #[ignore]
+    async fn count_month() {
+        let candle_type = CandleType::Month;
+        let num_months = 12;
+        let from: DateTime<Utc> = Utc.with_ymd_and_hms(2000, 1, 1, 0, 0, 0).unwrap();
+        let to: DateTime<Utc> = Utc.with_ymd_and_hms(2000, num_months, 1, 0, 0, 0).unwrap();
+
+        let count = candle_type.get_dates_count(from, to);
+
+        assert_eq!(count, num_months as usize);
+    }
 
     #[tokio::test]
     async fn get_date_for_minute() {
