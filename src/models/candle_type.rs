@@ -70,6 +70,15 @@ impl CandleType {
         dates
     }
 
+    pub fn get_end_date(
+        &self,
+        datetime: DateTime<Utc>
+    ) -> DateTime<Utc> {
+        let datetime = self.get_start_date(datetime);
+
+        datetime + self.get_duration(datetime)
+    }
+
     pub fn get_dates_count(&self, datetime_from: DateTime<Utc>, datetime_to: DateTime<Utc>) -> usize {
         let duration = self.get_duration(datetime_from);
         let from = self.get_start_date(datetime_from);
@@ -303,5 +312,15 @@ mod tests {
             let date = candle_type.get_start_date(from) + candle_type.get_duration(from);
             assert!(dates.contains(&date));
         }
+    }
+
+    #[tokio::test]
+    async fn test() {
+        let candle_type = CandleType::Minute;
+
+        let start = candle_type.get_start_date(Utc::now());
+        let end = candle_type.get_end_date(start);
+
+        println!("{} - {}", start, end);
     }
 }
