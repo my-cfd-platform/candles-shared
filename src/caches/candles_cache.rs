@@ -68,7 +68,7 @@ impl CandlesCache {
         }
     }
 
-    pub fn get_after_cloned(&self, datetime: DateTime<Utc>) -> Option<Vec<BidAskCandle>> {
+    pub fn get_after(&self, datetime: DateTime<Utc>) -> Option<Vec<&BidAskCandle>> {
         if self.candles_by_ids.len() == 0 {
             return None;
         }
@@ -82,7 +82,7 @@ impl CandlesCache {
                 let current_date = candle_dates[candle.candle_type.to_owned() as usize];
 
                 if candle.datetime >= current_date {
-                    Some(candle.clone())
+                    Some(candle)
                 } else {
                     None
                 }
