@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use chrono::{DateTime, Datelike, Utc};
 use chrono::{Duration, TimeZone};
 use num_enum::{IntoPrimitive, TryFromPrimitive};
@@ -51,10 +53,10 @@ impl CandleType {
         &self,
         datetime_from: DateTime<Utc>,
         datetime_to: DateTime<Utc>,
-    ) -> Vec<DateTime<Utc>> {
-        let mut dates = Vec::new();
+    ) -> HashSet<DateTime<Utc>> {
+        let mut dates = HashSet::new();
         let date_from = self.get_start_date(datetime_from);
-        dates.push(date_from);
+        dates.insert(date_from);
         let date_to = self.get_start_date(datetime_to);
 
         let mut last_date = self.get_start_date(date_from);
@@ -62,7 +64,7 @@ impl CandleType {
         while last_date < date_to {
             let next_date = self.get_start_date(last_date) + self.get_duration(last_date);
             last_date = self.get_start_date(next_date);
-            dates.push(last_date);
+            dates.insert(last_date);
         }
 
         dates
