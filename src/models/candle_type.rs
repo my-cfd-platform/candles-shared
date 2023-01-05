@@ -70,13 +70,16 @@ impl CandleType {
         dates
     }
 
+
     pub fn get_end_date(
         &self,
         datetime: DateTime<Utc>
     ) -> DateTime<Utc> {
-        let datetime = self.get_start_date(datetime);
+        let start = self.get_start_date(datetime);
+        let duration = self.get_duration(datetime);
+        let end = start + duration;
 
-        datetime + self.get_duration(datetime)
+        end
     }
 
     pub fn get_dates_count(&self, datetime_from: DateTime<Utc>, datetime_to: DateTime<Utc>) -> usize {
@@ -106,8 +109,15 @@ impl CandleType {
                 } else {
                     date.month() + 1
                 };
+
+                let next_year = if date.month() == 12 {
+                    date.year() + 1
+                } else {
+                    date.year()
+                };
+
                 let end_of_month: DateTime<Utc> = Utc
-                    .with_ymd_and_hms(date.year(), next_month, 1, 0, 0, 0)
+                    .with_ymd_and_hms(next_year, next_month, 1, 0, 0, 0)
                     .unwrap();
 
                 return end_of_month - start_of_month;
@@ -220,7 +230,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn get_date_for_month() {
+    async fn get_start_date_for_month() {
         let candle_type = CandleType::Month;
         let src_date: DateTime<Utc> = Utc.with_ymd_and_hms(2000, 1, 12, 3, 23, 34).unwrap();
 
@@ -232,6 +242,23 @@ mod tests {
         assert_eq!(start_date.hour(), 0);
         assert_eq!(start_date.minute(), 0);
         assert_eq!(start_date.second(), 0);
+    }
+
+    #[tokio::test]
+    async fn get_end_date_for_month() {
+        let candle_type = CandleType::Month;
+        let src_date: DateTime<Utc> = Utc.with_ymd_and_hms(2000, 12, 12, 3, 23, 34).unwrap();
+
+        let end_date = candle_type.get_end_date(src_date);
+
+        println!("{}", end_date.to_rfc3339());
+
+        assert_eq!(end_date.year(), src_date.year() + 1);
+        assert_eq!(end_date.month(), 1);
+        assert_eq!(end_date.day(), 1);
+        assert_eq!(end_date.hour(), 0);
+        assert_eq!(end_date.minute(), 0);
+        assert_eq!(end_date.second(), 0);
     }
 
     #[tokio::test]
