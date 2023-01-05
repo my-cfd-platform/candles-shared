@@ -98,22 +98,19 @@ impl CandleType {
             CandleType::Hour => Duration::seconds(3600),
             CandleType::Day => Duration::seconds(86400),
             CandleType::Month => {
-                let date = Utc
-                    .timestamp_millis_opt(datetime.timestamp() * 1000)
-                    .unwrap();
                 let start_of_month: DateTime<Utc> = Utc
-                    .with_ymd_and_hms(date.year(), date.month(), 1, 0, 0, 0)
+                    .with_ymd_and_hms(datetime.year(), datetime.month(), 1, 0, 0, 0)
                     .unwrap();
-                let next_month = if date.month() == 12 {
+                let next_month = if datetime.month() == 12 {
                     1
                 } else {
-                    date.month() + 1
+                    datetime.month() + 1
                 };
 
-                let next_year = if date.month() == 12 {
-                    date.year() + 1
+                let next_year = if datetime.month() == 12 {
+                    datetime.year() + 1
                 } else {
-                    date.year()
+                    datetime.year()
                 };
 
                 let end_of_month: DateTime<Utc> = Utc
