@@ -15,6 +15,10 @@ impl CandlesCache {
         }
     }
 
+    pub fn len(&self) -> usize {
+        self.candles_by_ids.len()
+    }
+
     pub fn contains(&self, candle_id: &str) -> bool {
         self.candles_by_ids.contains_key(candle_id)
     }
