@@ -72,6 +72,7 @@ impl CandlesCache {
         }
     }
 
+    /// Gets candles with date bigger or equals specified date
     pub fn get_after(&self, datetime: DateTime<Utc>) -> Option<Vec<&BidAskCandle>> {
         if self.candles_by_ids.len() == 0 {
             return None;
@@ -96,7 +97,8 @@ impl CandlesCache {
         Some(candles)
     }
 
-    pub fn remove_after(&mut self, datetime: DateTime<Utc>) -> i32 {
+    /// Removes candles with date less or equals specified date
+    pub fn remove_before(&mut self, datetime: DateTime<Utc>) -> i32 {
         let dates = self.calculate_candle_dates(datetime);
         let mut removed_count = 0;
 
