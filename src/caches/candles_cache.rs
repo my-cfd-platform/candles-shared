@@ -114,6 +114,10 @@ impl CandlesCache {
         removed_count
     }
 
+    pub fn get(&self, id: &str) -> Option<&BidAskCandle> {
+        self.candles_by_ids.get(id)
+    }
+
     fn calculate_candle_dates(&self, datetime: DateTime<Utc>) -> Vec<DateTime<Utc>> {
         let mut dates = Vec::with_capacity(self.candle_types.len());
 
