@@ -6,28 +6,31 @@ use super::candle_type::CandleType;
 
 #[serde_as]
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CandlePrice {
+pub struct CandleData {
     pub open: f64,
     pub close: f64,
     pub high: f64,
     pub low: f64,
     #[serde_as(as = "TimestampSecondsWithFrac<f64>")]
     pub datetime: DateTime<Utc>,
+    pub volume: f64,
 }
 
-impl CandlePrice {
-    pub fn new(datetime: DateTime<Utc>, price: f64) -> Self {
+impl CandleData {
+    pub fn new(datetime: DateTime<Utc>, price: f64, volume: f64) -> Self {
         Self {
             open: price,
             close: price,
             high: price,
             low: price,
             datetime,
+            volume,
         }
     }
 
-    pub fn update(&mut self, datetime: DateTime<Utc>, price: f64) {
+    pub fn update(&mut self, datetime: DateTime<Utc>, price: f64, volume: f64) {
         self.close = price;
+        self.volume += volume;
         self.datetime = datetime;
 
         if self.open == 0.0 {

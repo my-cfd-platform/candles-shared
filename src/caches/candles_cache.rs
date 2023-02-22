@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use chrono::{DateTime, Utc};
-use crate::models::{candle::BidAskCandle, candle_price::CandlePrice, candle_type::CandleType};
+use crate::models::{candle::BidAskCandle, candle_data::CandleData, candle_type::CandleType};
 
 pub struct CandlesCache {
     candles_by_ids: HashMap<String, BidAskCandle>,
@@ -41,6 +41,8 @@ impl CandlesCache {
         instrument: &str,
         bid: f64,
         ask: f64,
+        bid_vol: f64,
+        ask_vol: f64,
     ) {
         for candle_type in self.candle_types.iter() {
             let candle_datetime = candle_type.get_start_date(datetime);
@@ -48,7 +50,7 @@ impl CandlesCache {
             let candle = self.candles_by_ids.get_mut(&id);
 
             if let Some(candle) = candle {
-                candle.update(datetime, bid, ask);
+                candle.update(datetime, bid, ask, bid_vol, ask_vol);
             } else {
                 println!(
                     "create candle {}: {} {}; {} total count",
@@ -61,8 +63,8 @@ impl CandlesCache {
                 self.candles_by_ids.insert(
                     id,
                     BidAskCandle {
-                        ask_price: CandlePrice::new(datetime, ask),
-                        bid_price: CandlePrice::new(datetime, bid),
+                        ask_data: CandleData::new(datetime, ask, ask_vol),
+                        bid_data: CandleData::new(datetime, bid, bid_vol),
                         candle_type: candle_type.clone(),
                         instrument: instrument.to_owned(),
                         datetime: candle_datetime,

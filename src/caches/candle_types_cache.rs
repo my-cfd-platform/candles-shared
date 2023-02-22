@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use crate::models::{candle_type::CandleType, candle_price::CandlePrice};
+use crate::models::{candle_type::CandleType, candle_data::CandleData};
 use super::candle_prices_cache::CandlePricesCache;
 
 #[derive(Debug, Clone)]
@@ -22,7 +22,7 @@ impl CandleTypesCache {
         }
     }
 
-    pub fn init(&mut self, candle: CandlePrice, candle_type: CandleType) {
+    pub fn init(&mut self, candle: CandleData, candle_type: CandleType) {
         match candle_type {
             CandleType::Minute => self.minutes.init(candle),
             CandleType::Hour => self.hours.init(candle),
@@ -36,7 +36,7 @@ impl CandleTypesCache {
         candle_type: CandleType,
         date_from: DateTime<Utc>,
         date_to: DateTime<Utc>,
-    ) -> Vec<CandlePrice> {
+    ) -> Vec<CandleData> {
         match candle_type {
             CandleType::Minute => self.minutes.get_by_date_range(date_from, date_to),
             CandleType::Hour => self.hours.get_by_date_range(date_from, date_to),
@@ -45,11 +45,11 @@ impl CandleTypesCache {
         }
     }
 
-    pub fn update(&mut self, rate: f64, datetime: DateTime<Utc>) {
-        self.minutes.update(datetime, rate);
-        self.hours.update(datetime, rate);
-        self.days.update(datetime, rate);
-        self.months.update(datetime, rate);
+    pub fn update(&mut self, rate: f64, volume: f64, datetime: DateTime<Utc>) {
+        self.minutes.update(datetime, rate, volume);
+        self.hours.update(datetime, rate, volume);
+        self.days.update(datetime, rate, volume);
+        self.months.update(datetime, rate, volume);
     }
 
     pub fn clear(&mut self) {

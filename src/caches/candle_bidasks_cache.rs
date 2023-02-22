@@ -1,4 +1,4 @@
-use crate::models::{candle_type::CandleType, candle_price::CandlePrice};
+use crate::models::{candle_type::CandleType, candle_data::CandleData};
 use chrono::{DateTime, Utc};
 use std::collections::HashMap;
 use tokio::sync::RwLock;
@@ -17,10 +17,10 @@ impl CandleBidAsksCache {
         }
     }
 
-    pub async fn update(&self, datetime: DateTime<Utc>, instrument: &str, bid: f64, ask: f64) {
-        self.update_bid_or_ask(true, datetime, instrument, bid, ask)
+    pub async fn update(&self, datetime: DateTime<Utc>, instrument: &str, bid: f64, ask: f64, bid_vol: f64, ask_vol: f64) {
+        self.update_bid_or_ask(true, datetime, instrument, bid, ask, bid_vol, ask_vol)
             .await;
-        self.update_bid_or_ask(false, datetime, instrument, bid, ask)
+        self.update_bid_or_ask(false, datetime, instrument, bid, ask, bid_vol, ask_vol)
             .await;
     }
 
@@ -31,6 +31,8 @@ impl CandleBidAsksCache {
         instrument: &str,
         bid: f64,
         ask: f64,
+        bid_vol: f64,
+        ask_vol: f64,
     ) {
         let mut write_lock = match is_bid {
             true => self.bid_candles.write().await,
@@ -42,14 +44,18 @@ impl CandleBidAsksCache {
             true => bid,
             false => ask,
         };
+        let target_vol = match is_bid {
+            true => bid_vol,
+            false => ask_vol,
+        };
 
         match target_instruments_cache {
             Some(cache) => {
-                cache.update(rarget_rate, datetime);
+                cache.update(rarget_rate, target_vol, datetime);
             }
             None => {
                 let mut cache = CandleTypesCache::new(instrument.to_owned());
-                cache.update(rarget_rate, datetime);
+                cache.update(rarget_rate, target_vol, datetime);
                 write_lock.insert(instrument.to_owned(), cache);
             }
         }
@@ -60,7 +66,7 @@ impl CandleBidAsksCache {
         instument_id: String,
         is_bid: bool,
         candle_type: CandleType,
-        candle: CandlePrice,
+        candle: CandleData,
     ) {
         let mut target_cache = match is_bid {
             true => self.bid_candles.write().await,
@@ -88,7 +94,7 @@ impl CandleBidAsksCache {
         is_bid: bool,
         date_from: DateTime<Utc>,
         date_to: DateTime<Utc>,
-    ) -> Vec<CandlePrice> {
+    ) -> Vec<CandleData> {
         let target_cache = match is_bid {
             true => self.bid_candles.read().await,
             false => self.ask_candles.read().await,
@@ -127,7 +133,7 @@ mod tests {
         let bid = 25.55;
         let ask = 36.55;
 
-        cache.update(date, &instument, bid, ask).await;
+        cache.update(date, &instument, bid, ask, 0.0, 0.0).await;
 
         let result_bid_minute = cache
             .get_by_date_range(
@@ -226,13 +232,13 @@ mod tests {
         let bid = 25.55;
         let ask = 36.55;
 
-        cache.update(date, &instument, bid, ask).await;
+        cache.update(date, &instument, bid, ask, 0.0, 0.0).await;
 
         let date = Utc.timestamp_millis_opt(1662559474 * 1000).unwrap();
         let bid = 25.55;
         let ask = 36.55;
 
-        cache.update(date, &instument, bid, ask).await;
+        cache.update(date, &instument, bid, ask, 0.0, 0.0).await;
 
         let result_bid_minute = cache
             .get_by_date_range(
@@ -331,19 +337,19 @@ mod tests {
         let bid = 25.55;
         let ask = 36.55;
 
-        cache.update(date, &instument, bid, ask).await;
+        cache.update(date, &instument, bid, ask, 0.0, 0.0).await;
 
         let date = Utc.timestamp_millis_opt(1662559406 * 1000).unwrap();
         let bid = 60.55;
         let ask = 31.55;
 
-        cache.update(date, &instument, bid, ask).await;
+        cache.update(date, &instument, bid, ask, 0.0, 0.0).await;
 
         let date = Utc.timestamp_millis_opt(1662559407 * 1000).unwrap();
         let bid = 50.55;
         let ask = 62.55;
 
-        cache.update(date, &instument, bid, ask).await;
+        cache.update(date, &instument, bid, ask, 0.0, 0.0).await;
 
         let result_bid_minute = cache
             .get_by_date_range(
