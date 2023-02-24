@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, BTreeMap};
 use chrono::{DateTime, Utc};
 use crate::models::{candle::BidAskCandle, candle_data::CandleData, candle_type::CandleType};
 
@@ -98,6 +98,31 @@ impl CandlesCache {
 
         Some(candles)
     }
+
+        /// Gets candles with date bigger or equals specified date
+        pub fn get_sorted_after(&self, datetime: DateTime<Utc>) -> Option<BTreeMap<DateTime<Utc>, &BidAskCandle>> {
+            if self.candles_by_ids.len() == 0 {
+                return None;
+            }
+    
+            let candle_dates = self.calculate_candle_dates(datetime);
+    
+            let candles = self
+                .candles_by_ids
+                .iter()
+                .filter_map(|(_id, candle)| {
+                    let current_date = candle_dates[candle.candle_type.to_owned() as usize];
+    
+                    if candle.datetime >= current_date {
+                        Some((candle.datetime, candle))
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+    
+            Some(candles)
+        }
 
     /// Removes candles with date less or equals specified date
     pub fn remove_before(&mut self, datetime: DateTime<Utc>) -> i32 {
