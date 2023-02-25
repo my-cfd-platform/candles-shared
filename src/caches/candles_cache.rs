@@ -1,16 +1,17 @@
-use std::collections::{HashMap, BTreeMap};
+use std::collections::{BTreeMap};
 use chrono::{DateTime, Utc};
 use crate::models::{candle::BidAskCandle, candle_data::CandleData, candle_type::CandleType};
+use ahash::AHashMap;
 
 pub struct CandlesCache {
-    candles_by_ids: HashMap<String, BidAskCandle>,
+    candles_by_ids: AHashMap<String, BidAskCandle>,
     pub candle_types: Vec<CandleType>,
 }
 
 impl CandlesCache {
     pub fn new(candle_types: Vec<CandleType>) -> Self {
         Self {
-            candles_by_ids: HashMap::new(),
+            candles_by_ids: AHashMap::new(),
             candle_types,
         }
     }
