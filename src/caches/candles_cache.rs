@@ -24,6 +24,7 @@ impl CandlesCache {
     }
 
     pub fn insert(&mut self, candle: BidAskCandle) {
+        #[cfg(feature="console-log")]
         println!(
             "insert candle {}: {} {}; {} total count",
             candle.instrument,
@@ -52,6 +53,7 @@ impl CandlesCache {
             if let Some(candle) = candle {
                 candle.update(datetime, bid, ask, bid_vol, ask_vol);
             } else {
+                #[cfg(feature="console-log")]
                 println!(
                     "create candle {}: {} {}; {} total count",
                     instrument.to_owned(),
