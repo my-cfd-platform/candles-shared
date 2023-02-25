@@ -1,7 +1,7 @@
-use std::collections::{BTreeMap};
-use chrono::{DateTime, Utc};
 use crate::models::{candle::BidAskCandle, candle_data::CandleData, candle_type::CandleType};
 use ahash::AHashMap;
+use chrono::{DateTime, Utc};
+use std::collections::{BTreeMap};
 
 pub struct CandlesCache {
     candles_by_ids: AHashMap<String, BidAskCandle>,
@@ -16,6 +16,10 @@ impl CandlesCache {
         }
     }
 
+    pub fn get_all(&self) -> &AHashMap<String, BidAskCandle> {
+        &self.candles_by_ids
+    }
+
     pub fn len(&self) -> usize {
         self.candles_by_ids.len()
     }
@@ -25,7 +29,7 @@ impl CandlesCache {
     }
 
     pub fn insert(&mut self, candle: BidAskCandle) {
-        #[cfg(feature="console-log")]
+        #[cfg(feature = "console-log")]
         println!(
             "insert candle {}: {} {}; {} total count",
             candle.instrument,
@@ -54,7 +58,7 @@ impl CandlesCache {
             if let Some(candle) = candle {
                 candle.update(datetime, bid, ask, bid_vol, ask_vol);
             } else {
-                #[cfg(feature="console-log")]
+                #[cfg(feature = "console-log")]
                 println!(
                     "create candle {}: {} {}; {} total count",
                     instrument.to_owned(),
@@ -102,30 +106,33 @@ impl CandlesCache {
         Some(candles)
     }
 
-        /// Gets candles with date bigger or equals specified date
-        pub fn get_sorted_after(&self, datetime: DateTime<Utc>) -> Option<BTreeMap<DateTime<Utc>, &BidAskCandle>> {
-            if self.candles_by_ids.len() == 0 {
-                return None;
-            }
-    
-            let candle_dates = self.calculate_candle_dates(datetime);
-    
-            let candles = self
-                .candles_by_ids
-                .iter()
-                .filter_map(|(_id, candle)| {
-                    let current_date = candle_dates[candle.candle_type.to_owned() as usize];
-    
-                    if candle.datetime >= current_date {
-                        Some((candle.datetime, candle))
-                    } else {
-                        None
-                    }
-                })
-                .collect();
-    
-            Some(candles)
+    /// Gets candles with date bigger or equals specified date
+    pub fn get_sorted_after(
+        &self,
+        datetime: DateTime<Utc>,
+    ) -> Option<BTreeMap<DateTime<Utc>, &BidAskCandle>> {
+        if self.candles_by_ids.len() == 0 {
+            return None;
         }
+
+        let candle_dates = self.calculate_candle_dates(datetime);
+
+        let candles = self
+            .candles_by_ids
+            .iter()
+            .filter_map(|(_id, candle)| {
+                let current_date = candle_dates[candle.candle_type.to_owned() as usize];
+
+                if candle.datetime >= current_date {
+                    Some((candle.datetime, candle))
+                } else {
+                    None
+                }
+            })
+            .collect();
+
+        Some(candles)
+    }
 
     /// Removes candles with date less or equals specified date
     pub fn remove_before(&mut self, datetime: DateTime<Utc>) -> i32 {
