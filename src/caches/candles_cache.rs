@@ -1,7 +1,6 @@
 use crate::models::{candle::BidAskCandle, candle_data::CandleData, candle_type::CandleType};
 use ahash::AHashMap;
 use chrono::{DateTime, Utc};
-use std::collections::{BTreeMap};
 
 pub struct CandlesCache {
     candles_by_ids: AHashMap<String, BidAskCandle>,
@@ -109,49 +108,34 @@ impl CandlesCache {
         Some(candles)
     }
 
-    /// Gets candles with date bigger or equals specified date
-    pub fn get_sorted_after(
-        &self,
-        datetime: DateTime<Utc>,
-    ) -> Option<BTreeMap<DateTime<Utc>, &BidAskCandle>> {
-        if self.candles_by_ids.len() == 0 {
-            return None;
-        }
-
-        let candle_dates = self.calculate_candle_dates(datetime);
-
-        let candles = self
-            .candles_by_ids
-            .iter()
-            .filter_map(|(_id, candle)| {
-                let current_date = candle_dates[candle.candle_type.to_owned() as usize];
-
-                if candle.datetime >= current_date {
-                    Some((candle.datetime, candle))
-                } else {
-                    None
-                }
-            })
-            .collect();
-
-        Some(candles)
-    }
-
     /// Removes candles with date less or equals specified date
-    pub fn remove_before(&mut self, datetime: DateTime<Utc>) -> i32 {
+    pub fn remove_before(&mut self, datetime: DateTime<Utc>, candle_type: Option<CandleType>) -> i32 {
         let dates = self.calculate_candle_dates(datetime);
         let mut removed_count = 0;
 
-        self.candles_by_ids.retain(|_id, candle| {
-            let current_date = dates[candle.candle_type.to_owned() as usize];
+        if let Some(candle_type) = candle_type {
+            self.candles_by_ids.retain(|_id, candle| {
+                let current_date = dates[candle.candle_type.to_owned() as usize];
 
-            if candle.datetime <= current_date {
-                removed_count += 1;
-                false
-            } else {
-                true
-            }
-        });
+                if candle.datetime <= current_date && candle.candle_type == candle_type {
+                    removed_count += 1;
+                    false
+                } else {
+                    true
+                }
+            });
+        } else {
+            self.candles_by_ids.retain(|_id, candle| {
+                let current_date = dates[candle.candle_type.to_owned() as usize];
+
+                if candle.datetime <= current_date {
+                    removed_count += 1;
+                    false
+                } else {
+                    true
+                }
+            });
+        }
 
         removed_count
     }
