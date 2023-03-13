@@ -10,6 +10,9 @@ pub struct CandlesCache {
 
 impl CandlesCache {
     pub fn new(candle_types: Vec<CandleType>) -> Self {
+        let mut candle_types = candle_types;
+        candle_types.dedup();
+
         Self {
             candles_by_ids: AHashMap::new(),
             candle_types,
