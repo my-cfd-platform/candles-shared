@@ -31,8 +31,8 @@ pub enum CandleType {
     SixHours = 10,
     EightHours = 11,
     TwelveHours = 12,
-    //ThreeDays = 13,
-    //SevenDays = 14,
+    ThreeDays = 13,
+    SevenDays = 14,
 }
 
 impl CandleType {
@@ -83,6 +83,12 @@ impl CandleType {
                 .unwrap(),
             CandleType::TwelveHours => Utc
                 .timestamp_millis_opt((timestamp_sec - timestamp_sec % 43200) * 1000)
+                .unwrap(),
+            CandleType::ThreeDays => Utc
+                .timestamp_millis_opt((timestamp_sec - timestamp_sec % 604800) * 1000)
+                .unwrap(),
+            CandleType::SevenDays => Utc
+                .timestamp_millis_opt((timestamp_sec - timestamp_sec % 1036800) * 1000)
                 .unwrap(),
         }
     }
@@ -165,6 +171,8 @@ impl CandleType {
             CandleType::SixHours => Duration::hours(6),
             CandleType::EightHours => Duration::hours(8),
             CandleType::TwelveHours => Duration::hours(12),
+            CandleType::ThreeDays => Duration::days(3),
+            CandleType::SevenDays => Duration::days(7),
         }
     }
 }
