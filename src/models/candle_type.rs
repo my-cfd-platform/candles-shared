@@ -26,11 +26,11 @@ pub enum CandleType {
     FiveMinutes = 5,
     FifteenMinutes = 6,
     ThirtyMinutes = 7,
-    //TwoHours = 8,
-    //FourHours = 9,
-    //SixHours = 10,
-    //EightHours = 11,
-    //TwelveHours = 12,
+    TwoHours = 8,
+    FourHours = 9,
+    SixHours = 10,
+    EightHours = 11,
+    TwelveHours = 12,
     //ThreeDays = 13,
     //SevenDays = 14,
 }
@@ -68,6 +68,21 @@ impl CandleType {
                 .unwrap(),
             CandleType::ThirtyMinutes => Utc
                 .timestamp_millis_opt((timestamp_sec - timestamp_sec % 1800) * 1000)
+                .unwrap(),
+            CandleType::TwoHours => Utc
+                .timestamp_millis_opt((timestamp_sec - timestamp_sec % 7200) * 1000)
+                .unwrap(),
+            CandleType::FourHours => Utc
+                .timestamp_millis_opt((timestamp_sec - timestamp_sec % 14400) * 1000)
+                .unwrap(),
+            CandleType::SixHours => Utc
+                .timestamp_millis_opt((timestamp_sec - timestamp_sec % 21600) * 1000)
+                .unwrap(),
+            CandleType::EightHours => Utc
+                .timestamp_millis_opt((timestamp_sec - timestamp_sec % 28800) * 1000)
+                .unwrap(),
+            CandleType::TwelveHours => Utc
+                .timestamp_millis_opt((timestamp_sec - timestamp_sec % 43200) * 1000)
                 .unwrap(),
         }
     }
@@ -145,7 +160,11 @@ impl CandleType {
             CandleType::FiveMinutes => Duration::minutes(5),
             CandleType::FifteenMinutes => Duration::minutes(15),
             CandleType::ThirtyMinutes => Duration::minutes(30),
-
+            CandleType::TwoHours => Duration::hours(2),
+            CandleType::FourHours => Duration::hours(4),
+            CandleType::SixHours => Duration::hours(6),
+            CandleType::EightHours => Duration::hours(8),
+            CandleType::TwelveHours => Duration::hours(12),
         }
     }
 }
