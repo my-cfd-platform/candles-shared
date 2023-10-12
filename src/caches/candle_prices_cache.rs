@@ -10,7 +10,7 @@ pub struct CandlePricesCache{
 
 impl CandlePricesCache {
     pub fn new(candle_type: CandleType) -> Self{
-        Self { candle_type: candle_type, prices_by_date: BTreeMap::new() }
+        Self { candle_type, prices_by_date: BTreeMap::new() }
     }
 
     pub fn init(&mut self, candle: CandleData){

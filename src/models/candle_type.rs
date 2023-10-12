@@ -22,6 +22,17 @@ pub enum CandleType {
     Hour = 1,
     Day = 2,
     Month = 3,
+    ThreeMinutes = 4,
+    FiveMinutes = 5,
+    FifteenMinutes = 6,
+    ThirtyMinutes = 7,
+    //TwoHours = 8,
+    //FourHours = 9,
+    //SixHours = 10,
+    //EightHours = 11,
+    //TwelveHours = 12,
+    //ThreeDays = 13,
+    //SevenDays = 14,
 }
 
 impl CandleType {
@@ -44,8 +55,20 @@ impl CandleType {
                     .with_ymd_and_hms(date.year(), date.month(), 1, 0, 0, 0)
                     .unwrap();
 
-                return start_of_month;
+                start_of_month
             }
+            CandleType::ThreeMinutes => Utc
+                .timestamp_millis_opt((timestamp_sec - timestamp_sec % 180) * 1000)
+                .unwrap(),
+            CandleType::FiveMinutes => Utc
+                .timestamp_millis_opt((timestamp_sec - timestamp_sec % 300) * 1000)
+                .unwrap(),
+            CandleType::FifteenMinutes => Utc
+                .timestamp_millis_opt((timestamp_sec - timestamp_sec % 900) * 1000)
+                .unwrap(),
+            CandleType::ThirtyMinutes => Utc
+                .timestamp_millis_opt((timestamp_sec - timestamp_sec % 1800) * 1000)
+                .unwrap(),
         }
     }
 
@@ -77,9 +100,8 @@ impl CandleType {
     ) -> DateTime<Utc> {
         let start = self.get_start_date(datetime);
         let duration = self.get_duration(datetime);
-        let end = start + duration;
 
-        end
+        start + duration
     }
 
     pub fn get_dates_count(&self, datetime_from: DateTime<Utc>, datetime_to: DateTime<Utc>) -> usize {
@@ -117,8 +139,13 @@ impl CandleType {
                     .with_ymd_and_hms(next_year, next_month, 1, 0, 0, 0)
                     .unwrap();
 
-                return end_of_month - start_of_month;
+                end_of_month - start_of_month
             }
+            CandleType::ThreeMinutes => Duration::minutes(3),
+            CandleType::FiveMinutes => Duration::minutes(5),
+            CandleType::FifteenMinutes => Duration::minutes(15),
+            CandleType::ThirtyMinutes => Duration::minutes(30),
+
         }
     }
 }
