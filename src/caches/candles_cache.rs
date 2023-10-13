@@ -153,6 +153,6 @@ impl CandlesCache {
             dates.insert(index, candle_date);
         }
 
-        return dates;
+        dates
     }
 }
