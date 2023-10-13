@@ -11,6 +11,7 @@ impl CandlesCache {
     pub fn new(candle_types: Vec<CandleType>) -> Self {
         let mut candle_types = candle_types;
         candle_types.dedup();
+        candle_types.sort();
 
         Self {
             candles_by_ids: AHashMap::new(),
@@ -154,5 +155,43 @@ impl CandlesCache {
         }
 
         dates
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::models::candle_type::CandleType;
+    use chrono::{DateTime, TimeZone, Utc};
+    use crate::caches::candles_cache::CandlesCache;
+
+    #[tokio::test]
+    async fn calculate_candle_dates() {
+        let candle_types = [
+            CandleType::Minute,
+            CandleType::ThreeMinutes,
+            CandleType::FiveMinutes,
+            CandleType::FifteenMinutes,
+            CandleType::ThirtyMinutes,
+            CandleType::Hour,
+            CandleType::TwoHours,
+            CandleType::FourHours,
+            CandleType::SixHours,
+            CandleType::EightHours,
+            CandleType::TwelveHours,
+            CandleType::Day,
+            CandleType::ThreeDays,
+            CandleType::SevenDays,
+            CandleType::Month,
+        ];
+        let cache = CandlesCache::new(candle_types.to_vec());
+        let initial_date: DateTime<Utc> = Utc.with_ymd_and_hms(2000, 1, 1, 0, 0, 0).unwrap();
+        let dates = cache.calculate_candle_dates(initial_date);
+
+        assert_eq!(candle_types.len(), dates.len());
+
+        for candle_type in candle_types.iter() {
+            let date = dates[candle_type.to_owned() as usize];
+            assert_eq!(date, candle_type.get_start_date(initial_date))
+        }
     }
 }

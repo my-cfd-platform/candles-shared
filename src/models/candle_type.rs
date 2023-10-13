@@ -15,6 +15,8 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
     Hash,
     Eq,
     PartialEq,
+    PartialOrd,
+    Ord,
 )]
 #[repr(i32)]
 pub enum CandleType {
