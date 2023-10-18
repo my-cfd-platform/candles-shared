@@ -19,11 +19,18 @@ impl CandlePager {
             panic!("Desc ordering not supported")
         }
 
-        if self.from_date >= self.to_date || self.last_item_no >= self.limit {
+        let dates_count = self.candle_type.get_dates_count(self.from_date, self.to_date);
+        let limit = if self.limit > dates_count {
+            dates_count
+        } else {
+            self.limit
+        };
+
+        if self.from_date >= self.to_date || self.last_item_no >= limit {
             return self.from_date.timestamp_millis().to_string();
         }
 
-        let remaining_item_count = self.limit - self.last_item_no;
+        let remaining_item_count = limit - self.last_item_no;
         let candle_duration = self.candle_type.get_duration(self.from_date);
         let total_duration = candle_duration * remaining_item_count as i32;
         let from_date = self.from_date + total_duration + candle_duration;
