@@ -19,21 +19,15 @@ impl CandlePager {
             panic!("Desc ordering not supported")
         }
 
-        let dates_count = self
+        let total_items_count = self
             .candle_type
             .get_dates_count(self.from_date, self.to_date);
 
-        let limit = if self.limit > dates_count {
-            dates_count
-        } else {
-            self.limit
-        };
-
-        if self.from_date >= self.to_date {
+        if self.limit > total_items_count { // there is only one page
             return None;
         }
 
-        let remaining_item_count = limit - self.last_item_no;
+        let remaining_item_count = self.limit - self.last_item_no;
         let candle_duration = self.candle_type.get_duration(self.from_date);
         let total_duration = candle_duration * remaining_item_count as i32;
         let from_date = self.from_date + total_duration + candle_duration;
@@ -190,5 +184,24 @@ mod tests {
         let ids = pager.get_page_candle_ids();
 
         assert_eq!(ids.len(), pager.limit);
+    }
+
+    #[tokio::test]
+    async fn test_1() {
+        let pager = CandlePager {
+            instrument: "BTCUSDT".to_string(),
+            candle_type: CandleType::Hour,
+            from_date: Utc.timestamp_millis_opt("1696547451000".parse().unwrap()).unwrap(),
+            to_date: Utc.timestamp_millis_opt("1697627451000".parse().unwrap()).unwrap(),
+            page_id: None,
+            limit: 1500,
+            last_item_no: 0,
+        };
+
+        let ids = pager.get_page_candle_ids();
+
+        assert_eq!(300, ids.len());
+        assert_eq!(None, pager.get_next_page_id());
+
     }
 }
