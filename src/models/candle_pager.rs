@@ -4,26 +4,46 @@ use chrono::{DateTime, TimeZone, Utc};
 
 #[derive(Debug)]
 pub struct CandlePager {
-    pub instrument: String,
-    pub candle_type: CandleType,
-    pub from_date: DateTime<Utc>,
-    pub to_date: DateTime<Utc>,
-    pub page_id: Option<String>,
-    pub limit: usize,
-    pub last_item_no: usize,
+    instrument: String,
+    candle_type: CandleType,
+    from_date: DateTime<Utc>,
+    to_date: DateTime<Utc>,
+    page_id: Option<String>,
+    limit: usize,
+    last_item_no: usize,
 }
 
 impl CandlePager {
-    pub fn get_next_page_id(&self) -> Option<String> {
-        if self.is_desc() {
-            panic!("Desc ordering not supported")
+    pub fn new(
+        instrument: String,
+        candle_type: CandleType,
+        from_date: DateTime<Utc>,
+        to_date: DateTime<Utc>,
+        page_id: Option<String>,
+        limit: usize,
+    ) -> Self {
+        if from_date > to_date {
+            panic!("Invalid date range: from can't be more than to")
         }
 
+        Self {
+            instrument,
+            candle_type,
+            from_date,
+            to_date,
+            page_id,
+            limit,
+            last_item_no: 0,
+        }
+    }
+
+    pub fn get_next_page_id(&self) -> Option<String> {
         let total_items_count = self
             .candle_type
             .get_dates_count(self.from_date, self.to_date);
 
-        if self.limit > total_items_count { // there is only one page
+        if self.limit > total_items_count {
+            // there is only one page
             return None;
         }
 
@@ -46,10 +66,6 @@ impl CandlePager {
     }
 
     pub fn move_candle_id(&mut self) -> Option<String> {
-        if self.is_desc() {
-            panic!("Desc ordering not supported")
-        }
-
         if self.last_item_no >= self.limit {
             return None;
         }
@@ -71,10 +87,6 @@ impl CandlePager {
     }
 
     pub fn get_page_candle_ids(&self) -> Vec<String> {
-        if self.is_desc() {
-            panic!("Desc ordering not supported")
-        }
-
         if self.last_item_no >= self.limit {
             return vec![];
         }
@@ -107,14 +119,6 @@ impl CandlePager {
         }
 
         ids
-    }
-
-    pub fn is_asc(&self) -> bool {
-        self.from_date < self.to_date
-    }
-
-    pub fn is_desc(&self) -> bool {
-        self.from_date > self.to_date
     }
 }
 
@@ -191,8 +195,12 @@ mod tests {
         let pager = CandlePager {
             instrument: "BTCUSDT".to_string(),
             candle_type: CandleType::Hour,
-            from_date: Utc.timestamp_millis_opt("1696547451000".parse().unwrap()).unwrap(),
-            to_date: Utc.timestamp_millis_opt("1697627451000".parse().unwrap()).unwrap(),
+            from_date: Utc
+                .timestamp_millis_opt("1696547451000".parse().unwrap())
+                .unwrap(),
+            to_date: Utc
+                .timestamp_millis_opt("1697627451000".parse().unwrap())
+                .unwrap(),
             page_id: None,
             limit: 1500,
             last_item_no: 0,
@@ -202,6 +210,5 @@ mod tests {
 
         assert_eq!(300, ids.len());
         assert_eq!(None, pager.get_next_page_id());
-
     }
 }
