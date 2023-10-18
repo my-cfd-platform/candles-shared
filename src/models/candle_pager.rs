@@ -37,6 +37,14 @@ impl CandlePager {
         }
     }
 
+    pub fn get_instrument(&self) -> &str {
+        &self.instrument
+    }
+
+    pub fn get_limit(&self) -> usize {
+        self.limit
+    }
+
     pub fn get_next_page_id(&self) -> Option<String> {
         let total_items_count = self
             .candle_type
