@@ -26,8 +26,7 @@ impl CandlePager {
         let remaining_item_count = self.limit - self.last_item_no;
         let candle_duration = self.candle_type.get_duration(self.from_date);
         let total_duration = candle_duration * remaining_item_count as i32;
-        let mut from_date = self.from_date;
-        from_date += total_duration + candle_duration;
+        let from_date = self.from_date + total_duration + candle_duration;
 
         from_date.timestamp_millis().to_string()
     }
@@ -96,7 +95,7 @@ mod tests {
 
     #[tokio::test]
     async fn get_next_page_id() {
-        let pager = CandlePager {
+        let mut pager = CandlePager {
             instrument: "test".to_string(),
             candle_type: CandleType::Minute,
             from_date: Utc.with_ymd_and_hms(2000, 1, 1, 0, 0, 0).unwrap(),
@@ -106,6 +105,8 @@ mod tests {
             last_item_no: 0,
         };
 
+        assert_eq!(pager.get_next_page_id(), "946685040000");
+        _ = pager.move_candle_id();
         assert_eq!(pager.get_next_page_id(), "946685040000");
     }
 }
