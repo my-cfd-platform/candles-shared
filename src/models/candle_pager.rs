@@ -14,20 +14,23 @@ pub struct CandlePager {
 }
 
 impl CandlePager {
-    pub fn get_next_page_id(&self) -> String {
+    pub fn get_next_page_id(&self) -> Option<String> {
         if self.is_desc() {
             panic!("Desc ordering not supported")
         }
 
-        let dates_count = self.candle_type.get_dates_count(self.from_date, self.to_date);
+        let dates_count = self
+            .candle_type
+            .get_dates_count(self.from_date, self.to_date);
+
         let limit = if self.limit > dates_count {
             dates_count
         } else {
             self.limit
         };
 
-        if self.from_date >= self.to_date || self.last_item_no >= limit {
-            return self.from_date.timestamp_millis().to_string();
+        if self.from_date >= self.to_date {
+            return None;
         }
 
         let remaining_item_count = limit - self.last_item_no;
@@ -35,7 +38,17 @@ impl CandlePager {
         let total_duration = candle_duration * remaining_item_count as i32;
         let from_date = self.from_date + total_duration + candle_duration;
 
-        from_date.timestamp_millis().to_string()
+        Some(from_date.timestamp_millis().to_string())
+    }
+
+    pub fn move_page_id(&mut self) -> Option<String> {
+        let next_page_id = self.get_next_page_id()?;
+        let date = Utc
+            .timestamp_millis_opt(next_page_id.parse().unwrap())
+            .unwrap();
+        self.from_date = date;
+
+        Some(next_page_id)
     }
 
     pub fn move_candle_id(&mut self) -> Option<String> {
@@ -112,8 +125,14 @@ mod tests {
             last_item_no: 0,
         };
 
-        assert_eq!(pager.get_next_page_id(), "946685040000");
+        assert_eq!(pager.get_next_page_id(), Some("946685040000".to_string()));
         _ = pager.move_candle_id();
-        assert_eq!(pager.get_next_page_id(), "946685040000");
+        assert_eq!(pager.get_next_page_id(), Some("946685040000".to_string()));
+        _ = pager.move_candle_id();
+        _ = pager.move_candle_id();
+        assert_eq!(pager.get_next_page_id(), Some("946685040000".to_string()));
+        let id = pager.move_candle_id();
+
+        println!("{:?}", id);
     }
 }
