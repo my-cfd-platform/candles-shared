@@ -76,6 +76,45 @@ impl CandlePager {
         Some(id)
     }
 
+    pub fn get_page_candle_ids(&self) -> Vec<String> {
+        if self.is_desc() {
+            panic!("Desc ordering not supported")
+        }
+
+        if self.last_item_no >= self.limit {
+            return vec![];
+        }
+        let mut from_date = self.from_date;
+
+        if let Some(page_id) = self.page_id.as_ref() {
+            let page_id = page_id.parse::<i64>().expect("Failed to parse page_id");
+            from_date = Utc.timestamp_millis_opt(page_id).unwrap()
+        }
+
+        let dates_count = self
+            .candle_type
+            .get_dates_count(self.from_date, self.to_date);
+        let limit = if self.limit > dates_count {
+            dates_count
+        } else {
+            self.limit
+        };
+        let mut ids = Vec::with_capacity(limit);
+
+        for _ in 0..limit {
+            if self.from_date >= self.to_date {
+                return ids;
+            }
+
+            let id = BidAskCandle::generate_id(&self.instrument, &self.candle_type, from_date);
+            ids.push(id);
+
+            from_date = from_date + self.candle_type.get_duration(from_date);
+        }
+
+        ids
+    }
+
     pub fn is_asc(&self) -> bool {
         self.from_date < self.to_date
     }
@@ -134,5 +173,22 @@ mod tests {
         let id = pager.move_candle_id();
 
         println!("{:?}", id);
+    }
+
+    #[tokio::test]
+    async fn get_page_candle_ids() {
+        let pager = CandlePager {
+            instrument: "test".to_string(),
+            candle_type: CandleType::Minute,
+            from_date: Utc.with_ymd_and_hms(2000, 1, 1, 0, 0, 0).unwrap(),
+            to_date: Utc.with_ymd_and_hms(2000, 1, 2, 0, 0, 0).unwrap(),
+            page_id: None,
+            limit: 5,
+            last_item_no: 0,
+        };
+
+        let ids = pager.get_page_candle_ids();
+
+        assert_eq!(ids.len(), pager.limit);
     }
 }
