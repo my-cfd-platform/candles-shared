@@ -108,6 +108,7 @@ impl CandlePager {
         let dates_count = self
             .candle_type
             .get_dates_count(self.from_date, self.to_date);
+        println!("{}", dates_count);
         let limit = if self.limit > dates_count {
             dates_count
         } else {
@@ -218,5 +219,25 @@ mod tests {
 
         assert_eq!(300, ids.len());
         assert_eq!(None, pager.get_next_page_id());
+    }
+
+    #[tokio::test]
+    async fn test_2() {
+        let pager = CandlePager {
+            instrument: "BTCUSDT".to_string(),
+            candle_type: CandleType::FourHours,
+            from_date: Utc
+                .timestamp_millis_opt("1701275150000".parse().unwrap())
+                .unwrap(),
+            to_date: Utc
+                .timestamp_millis_opt("1701275486000".parse().unwrap())
+                .unwrap(),
+            page_id: None,
+            limit: 1500,
+            last_item_no: 0,
+        };
+
+        let ids = pager.get_page_candle_ids();
+        assert_eq!(1, ids.len());
     }
 }

@@ -130,7 +130,7 @@ impl CandleType {
     pub fn get_dates_count(&self, datetime_from: DateTime<Utc>, datetime_to: DateTime<Utc>) -> usize {
         let duration = self.get_duration(datetime_from);
         let from = self.get_start_date(datetime_from);
-        let to = self.get_start_date(datetime_to);
+        let to = self.get_end_date(datetime_to);
         let duration_between = to - from;
         let count = duration_between.num_seconds() / duration.num_seconds();
 
