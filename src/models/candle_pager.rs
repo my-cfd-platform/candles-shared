@@ -108,7 +108,6 @@ impl CandlePager {
         let dates_count = self
             .candle_type
             .get_dates_count(self.from_date, self.to_date);
-        println!("{}", dates_count);
         let limit = if self.limit > dates_count {
             dates_count
         } else {
