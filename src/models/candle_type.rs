@@ -411,7 +411,7 @@ mod tests {
         let date = Utc.timestamp_millis_opt(912470400000).unwrap();
         println!("date: {}", date);
 
-        let date2 = Utc.timestamp_millis_opt(1698796800 * 1000).unwrap();
+        let date2 = Utc.timestamp_millis_opt(1701878400 * 1000).unwrap();
         println!("date2: {}", date2);
 
         let start = candle_type.get_start_date(date);

@@ -1,6 +1,6 @@
 use crate::models::candle::BidAskCandle;
 use crate::models::candle_type::CandleType;
-use chrono::{DateTime, TimeZone, Utc};
+use chrono::{DateTime, Duration, TimeZone, Utc};
 
 #[derive(Debug)]
 pub struct CandlePager {
@@ -116,14 +116,14 @@ impl CandlePager {
         let mut ids = Vec::with_capacity(limit);
 
         for _ in 0..limit {
-            if self.from_date >= self.to_date {
+            if from_date >= self.to_date {
                 return ids;
             }
 
             let id = BidAskCandle::generate_id(&self.instrument, &self.candle_type, from_date);
             ids.push(id);
 
-            from_date = from_date + self.candle_type.get_duration(from_date);
+            from_date = from_date + self.candle_type.get_duration(from_date) - Duration::seconds(1);
         }
 
         ids
@@ -278,5 +278,35 @@ mod tests {
 
         let ids = pager.get_page_candle_ids();
         assert_eq!(ids.len(), 12);
+    }
+
+    #[tokio::test]
+    async fn test_5() {
+        let _from_date: DateTime<Utc> = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
+        let _to_date: DateTime<Utc> = Utc.with_ymd_and_hms(2023, 12, 6, 0, 0, 0).unwrap();
+        let from_date = Utc
+            .timestamp_millis_opt("1697564165000".parse().unwrap())
+            .unwrap();
+        let to_date = Utc
+            .timestamp_millis_opt("1701884165000".parse().unwrap())
+            .unwrap();
+        //let from_date = to_date - Duration::hours(4);
+
+        let pager = CandlePager {
+            instrument: "BTCUSDT".to_string(),
+            candle_type: CandleType::FourHours,
+            from_date,
+            to_date,
+            page_id: None,
+            limit: 10000,
+            last_item_no: 0,
+        };
+
+        let ids = pager.get_page_candle_ids();
+        println!("{}", ids.len());
+        println!("{}", ids[ids.len() - 1]);
+        //println!("{:?}", ids);
+
+
     }
 }
