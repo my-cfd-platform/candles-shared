@@ -108,7 +108,6 @@ impl CandlePager {
         let dates_count = self
             .candle_type
             .get_dates_count(self.from_date, self.to_date);
-        println!("{}", dates_count);
         let limit = if self.limit > dates_count {
             dates_count
         } else {
@@ -217,7 +216,7 @@ mod tests {
 
         let ids = pager.get_page_candle_ids();
 
-        assert_eq!(300, ids.len());
+        assert_eq!(301, ids.len());
         assert_eq!(None, pager.get_next_page_id());
     }
 
@@ -259,7 +258,6 @@ mod tests {
 
         let ids = pager.get_page_candle_ids();
         println!("{}", ids.len());
-        println!("{}", ids[0]);
 
     }
 

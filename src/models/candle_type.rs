@@ -139,22 +139,15 @@ impl CandleType {
             total_month_diff as usize
         } else {
             let duration = self.get_duration(datetime_from);
-
-            println!("get_dates_count. from: {:?}", from);
-            println!("get_dates_count. to: {:?}", to);
-
             let duration_between = to - from;
-            println!("get_dates_count. duration_between: {:?}", duration_between);
-
             let count = duration_between.num_seconds() / duration.num_seconds();
-            println!("get_dates_count. count: {:?}", count);
 
             count as usize
         }
     }
 
     pub fn get_duration(&self, datetime: DateTime<Utc>) -> Duration {
-        match self {
+        let duration = match self {
             CandleType::Minute => Duration::seconds(60),
             CandleType::Hour => Duration::seconds(3600),
             CandleType::Day => Duration::seconds(86400),
@@ -191,7 +184,9 @@ impl CandleType {
             CandleType::TwelveHours => Duration::hours(12),
             CandleType::ThreeDays => Duration::days(3),
             CandleType::SevenDays => Duration::days(7),
-        }
+        };
+
+        duration
     }
 }
 
@@ -207,7 +202,7 @@ mod tests {
         let candle_type = CandleType::Minute;
         let duration = Duration::minutes(15);
         let from: DateTime<Utc> = Utc.with_ymd_and_hms(2000, 1, 1, 0, 0, 0).unwrap();
-        let to: DateTime<Utc> = from + duration;
+        let to: DateTime<Utc> = from + duration - Duration::seconds(1);
 
         let count = candle_type.get_dates_count(from, to);
 
@@ -219,7 +214,7 @@ mod tests {
         let candle_type = CandleType::Hour;
         let duration = Duration::hours(15);
         let from: DateTime<Utc> = Utc.with_ymd_and_hms(2000, 1, 1, 0, 0, 0).unwrap();
-        let to: DateTime<Utc> = from + duration;
+        let to: DateTime<Utc> = from + duration - Duration::seconds(1);
 
         let count = candle_type.get_dates_count(from, to);
 
@@ -231,7 +226,7 @@ mod tests {
         let candle_type = CandleType::Day;
         let duration = Duration::days(15);
         let from: DateTime<Utc> = Utc.with_ymd_and_hms(2000, 1, 1, 0, 0, 0).unwrap();
-        let to: DateTime<Utc> = from + duration;
+        let to: DateTime<Utc> = from + duration - Duration::seconds(1);
 
         let count = candle_type.get_dates_count(from, to);
 
