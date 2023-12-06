@@ -128,13 +128,29 @@ impl CandleType {
     }
 
     pub fn get_dates_count(&self, datetime_from: DateTime<Utc>, datetime_to: DateTime<Utc>) -> usize {
-        let duration = self.get_duration(datetime_from);
         let from = self.get_start_date(datetime_from);
         let to = self.get_end_date(datetime_to);
-        let duration_between = to - from;
-        let count = duration_between.num_seconds() / duration.num_seconds();
 
-        count as usize
+        if self == &CandleType::Month {
+            let year_diff = to.year() - from.year();
+            let month_diff = to.month() - from.month();
+            let total_month_diff = year_diff * 12 + month_diff as i32;
+
+            total_month_diff as usize
+        } else {
+            let duration = self.get_duration(datetime_from);
+
+            println!("get_dates_count. from: {:?}", from);
+            println!("get_dates_count. to: {:?}", to);
+
+            let duration_between = to - from;
+            println!("get_dates_count. duration_between: {:?}", duration_between);
+
+            let count = duration_between.num_seconds() / duration.num_seconds();
+            println!("get_dates_count. count: {:?}", count);
+
+            count as usize
+        }
     }
 
     pub fn get_duration(&self, datetime: DateTime<Utc>) -> Duration {
@@ -396,11 +412,18 @@ mod tests {
 
     #[tokio::test]
     async fn test() {
-        let candle_type = CandleType::Minute;
+        let candle_type = CandleType::Month;
+        let date = Utc.timestamp_millis_opt(912470400000).unwrap();
+        println!("date: {}", date);
 
-        let start = candle_type.get_start_date(Utc::now());
-        let end = candle_type.get_end_date(start);
+        let date2 = Utc.timestamp_millis_opt(1698796800 * 1000).unwrap();
+        println!("date2: {}", date2);
+
+        let start = candle_type.get_start_date(date);
+        let end = candle_type.get_end_date(date);
 
         println!("{} - {}", start, end);
+        println!("{} - {}", start.timestamp_millis(), end.timestamp_millis());
+
     }
 }

@@ -108,6 +108,7 @@ impl CandlePager {
         let dates_count = self
             .candle_type
             .get_dates_count(self.from_date, self.to_date);
+        println!("{}", dates_count);
         let limit = if self.limit > dates_count {
             dates_count
         } else {
@@ -134,7 +135,7 @@ impl CandlePager {
 mod tests {
     use crate::models::candle_pager::CandlePager;
     use crate::models::candle_type::CandleType;
-    use chrono::{TimeZone, Utc};
+    use chrono::{DateTime, TimeZone, Utc};
 
     #[tokio::test]
     async fn get_next_candle_id() {
@@ -238,5 +239,46 @@ mod tests {
 
         let ids = pager.get_page_candle_ids();
         assert_eq!(1, ids.len());
+    }
+
+    #[tokio::test]
+    async fn test_3() {
+        let pager = CandlePager {
+            instrument: "BTCUSDT".to_string(),
+            candle_type: CandleType::FourHours,
+            from_date: Utc
+                .timestamp_millis_opt("1697556512000".parse().unwrap())
+                .unwrap(),
+            to_date: Utc
+                .timestamp_millis_opt("1701876512000".parse().unwrap())
+                .unwrap(),
+            page_id: None,
+            limit: 1,
+            last_item_no: 0,
+        };
+
+        let ids = pager.get_page_candle_ids();
+        println!("{}", ids.len());
+        println!("{}", ids[0]);
+
+    }
+
+    #[tokio::test]
+    async fn test_4() {
+        let from: DateTime<Utc> = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
+        let to: DateTime<Utc> = Utc.with_ymd_and_hms(2023, 12, 6, 0, 0, 0).unwrap();
+
+        let pager = CandlePager {
+            instrument: "BTCUSDT".to_string(),
+            candle_type: CandleType::Month,
+            from_date: from,
+            to_date: to,
+            page_id: None,
+            limit: 10000,
+            last_item_no: 0,
+        };
+
+        let ids = pager.get_page_candle_ids();
+        assert_eq!(ids.len(), 12);
     }
 }
