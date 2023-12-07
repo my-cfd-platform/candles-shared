@@ -89,7 +89,8 @@ impl CandlePager {
 
         let id = BidAskCandle::generate_id(&self.instrument, &self.candle_type, self.from_date);
         self.last_item_no += 1;
-        self.from_date = self.from_date + self.candle_type.get_duration(self.from_date);
+        self.from_date =
+            self.from_date + self.candle_type.get_duration(self.from_date) - Duration::seconds(1);
 
         Some(id)
     }
@@ -258,7 +259,6 @@ mod tests {
 
         let ids = pager.get_page_candle_ids();
         println!("{}", ids.len());
-
     }
 
     #[tokio::test]
@@ -282,17 +282,14 @@ mod tests {
 
     #[tokio::test]
     async fn test_5() {
-        let _from_date: DateTime<Utc> = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
-        let _to_date: DateTime<Utc> = Utc.with_ymd_and_hms(2023, 12, 6, 0, 0, 0).unwrap();
         let from_date = Utc
             .timestamp_millis_opt("1697564165000".parse().unwrap())
             .unwrap();
         let to_date = Utc
             .timestamp_millis_opt("1701884165000".parse().unwrap())
             .unwrap();
-        //let from_date = to_date - Duration::hours(4);
 
-        let pager = CandlePager {
+        let mut pager = CandlePager {
             instrument: "BTCUSDT".to_string(),
             candle_type: CandleType::FourHours,
             from_date,
@@ -303,10 +300,12 @@ mod tests {
         };
 
         let ids = pager.get_page_candle_ids();
-        println!("{}", ids.len());
-        println!("{}", ids[ids.len() - 1]);
-        //println!("{:?}", ids);
+        let mut count = 0;
 
+        while let Some(_) = pager.move_candle_id() {
+            count += 1;
+        }
 
+        assert_eq!(ids.len(), count);
     }
 }
