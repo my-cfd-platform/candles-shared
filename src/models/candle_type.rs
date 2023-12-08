@@ -131,18 +131,28 @@ impl CandleType {
         let from = self.get_start_date(datetime_from);
         let to = self.get_end_date(datetime_to);
 
-        if self == &CandleType::Month {
-            let year_diff = to.year() - from.year();
-            let month_diff = to.month() - from.month();
-            let total_month_diff = year_diff * 12 + month_diff as i32;
+        match self {
+            CandleType::Month =>  {
+                let year_diff = to.year() - from.year();
+                let month_diff = to.month() - from.month();
+                let total_month_diff = year_diff * 12 + month_diff as i32;
 
-            total_month_diff as usize
-        } else {
-            let duration = self.get_duration(datetime_from);
-            let duration_between = to - from;
-            let count = duration_between.num_seconds() / duration.num_seconds();
+                total_month_diff as usize
+            },
+            CandleType::Minute => {
+                let duration = to.signed_duration_since(from);
+                let minute_count = duration.num_minutes();
 
-            count as usize
+                minute_count as usize
+            },
+            _ => {
+                let duration = self.get_duration(datetime_from);
+                let duration_between = to - from;
+                let count = duration_between.num_seconds() / duration.num_seconds();
+
+                count as usize
+            }
+
         }
     }
 
@@ -315,8 +325,6 @@ mod tests {
 
         let end_date = candle_type.get_end_date(src_date);
 
-        println!("{}", end_date.to_rfc3339());
-
         assert_eq!(end_date.year(), src_date.year() + 1);
         assert_eq!(end_date.month(), 1);
         assert_eq!(end_date.day(), 1);
@@ -403,22 +411,5 @@ mod tests {
             let date = candle_type.get_start_date(from) + candle_type.get_duration(from);
             assert!(dates.contains(&date));
         }
-    }
-
-    #[tokio::test]
-    async fn test() {
-        let candle_type = CandleType::Month;
-        let date = Utc.timestamp_millis_opt(912470400000).unwrap();
-        println!("date: {}", date);
-
-        let date2 = Utc.timestamp_millis_opt(1701878400 * 1000).unwrap();
-        println!("date2: {}", date2);
-
-        let start = candle_type.get_start_date(date);
-        let end = candle_type.get_end_date(date);
-
-        println!("{} - {}", start, end);
-        println!("{} - {}", start.timestamp_millis(), end.timestamp_millis());
-
     }
 }
