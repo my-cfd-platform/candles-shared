@@ -63,6 +63,10 @@ impl CandlePager {
         let total_duration = candle_duration * remaining_item_count as i32;
         let from_date = self.from_date + total_duration + candle_duration;
 
+        if from_date > self.to_date {
+            return None;
+        }
+
         Some(from_date.timestamp_millis().to_string())
     }
 
