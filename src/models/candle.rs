@@ -1,11 +1,12 @@
 use chrono::{DateTime, Utc};
+use compact_str::CompactString;
 use super::{candle_type::CandleType, candle_data::CandleData};
 
 #[derive(Clone)]
 pub struct BidAskCandle {
     pub candle_type: CandleType,
     pub datetime: DateTime<Utc>,
-    pub instrument: String,
+    pub instrument: CompactString,
     pub bid_data: CandleData,
     pub ask_data: CandleData,
 }

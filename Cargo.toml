@@ -1,6 +1,6 @@
 [package]
 name = "candles-shared"
-version = "0.4.13"
+version = "0.5.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -20,3 +20,4 @@ serde_derive = "*"
 serde_with = { version = "*", features = ["chrono"] }
 serde_json = "*"
 ahash = "*"
+compact_str = "*"

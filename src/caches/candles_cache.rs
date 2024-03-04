@@ -1,6 +1,7 @@
 use crate::models::{candle::BidAskCandle, candle_data::CandleData, candle_type::CandleType};
 use ahash::AHashMap;
 use chrono::{DateTime, Utc};
+use compact_str::{ToCompactString};
 
 pub struct CandlesCache {
     candles_by_ids: AHashMap<String, BidAskCandle>,
@@ -76,7 +77,7 @@ impl CandlesCache {
                         ask_data: CandleData::new(datetime, ask, ask_vol),
                         bid_data: CandleData::new(datetime, bid, bid_vol),
                         candle_type: candle_type.clone(),
-                        instrument: instrument.to_owned(),
+                        instrument: instrument.to_compact_string(),
                         datetime: candle_datetime,
                     },
                 );
