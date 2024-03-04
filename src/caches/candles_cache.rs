@@ -97,9 +97,9 @@ impl CandlesCache {
             .candles_by_ids
             .iter()
             .filter_map(|(_id, candle)| {
-                let current_date = candle_dates[candle.candle_type.to_owned() as usize];
+                let current_date = candle_dates.get(&candle.candle_type).expect("wrong calculate_candle_dates");
 
-                if candle.datetime >= current_date {
+                if candle.datetime >= *current_date {
                     Some(candle)
                 } else {
                     None
@@ -112,12 +112,11 @@ impl CandlesCache {
 
     /// Removes candles with date less or equals specified date
     pub fn remove_before(&mut self, datetime: DateTime<Utc>, candle_type: Option<CandleType>) -> i32 {
-        let dates = self.calculate_candle_dates(datetime);
         let mut removed_count = 0;
 
         if let Some(candle_type) = candle_type {
             self.candles_by_ids.retain(|_id, candle| {
-                let current_date = dates[candle.candle_type.to_owned() as usize];
+                let current_date = candle_type.get_start_date(datetime);
 
                 if candle.datetime <= current_date && candle.candle_type == candle_type {
                     removed_count += 1;
@@ -127,10 +126,12 @@ impl CandlesCache {
                 }
             });
         } else {
-            self.candles_by_ids.retain(|_id, candle| {
-                let current_date = dates[candle.candle_type.to_owned() as usize];
+            let dates = self.calculate_candle_dates(datetime);
 
-                if candle.datetime <= current_date {
+            self.candles_by_ids.retain(|_id, candle| {
+                let current_date = dates.get(&candle.candle_type).expect("Wrong calculate_candle_dates");
+
+                if candle.datetime <= *current_date {
                     removed_count += 1;
                     false
                 } else {
@@ -146,13 +147,11 @@ impl CandlesCache {
         self.candles_by_ids.get(id)
     }
 
-    fn calculate_candle_dates(&self, datetime: DateTime<Utc>) -> Vec<DateTime<Utc>> {
-        let mut dates = Vec::with_capacity(self.candle_types.len());
+    fn calculate_candle_dates(&self, datetime: DateTime<Utc>) -> AHashMap<CandleType, DateTime<Utc>> {
+        let mut dates = AHashMap::with_capacity(self.candle_types.len());
 
         for candle_type in self.candle_types.iter() {
-            let candle_date = candle_type.get_start_date(datetime);
-            let index = candle_type.to_owned() as usize;
-            dates.insert(index, candle_date);
+            dates.insert(candle_type.to_owned(), candle_type.get_start_date(datetime));
         }
 
         dates
@@ -191,8 +190,8 @@ mod tests {
         assert_eq!(candle_types.len(), dates.len());
 
         for candle_type in candle_types.iter() {
-            let date = dates[candle_type.to_owned() as usize];
-            assert_eq!(date, candle_type.get_start_date(initial_date))
+            let date = dates.get(&candle_type);
+            assert_eq!(date, Some(&candle_type.get_start_date(initial_date)))
         }
     }
 }
