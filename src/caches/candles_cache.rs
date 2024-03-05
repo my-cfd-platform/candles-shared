@@ -6,6 +6,7 @@ use compact_str::{ToCompactString};
 pub struct CandlesCache {
     candles_by_ids: AHashMap<String, BidAskCandle>,
     pub candle_types: Vec<CandleType>,
+    pub last_update_date: Option<DateTime<Utc>>,
 }
 
 impl CandlesCache {
@@ -17,6 +18,7 @@ impl CandlesCache {
         Self {
             candles_by_ids: AHashMap::new(),
             candle_types,
+            last_update_date: None,
         }
     }
 
@@ -83,6 +85,8 @@ impl CandlesCache {
                 );
             }
         }
+        
+        self.last_update_date.replace(Utc::now());
     }
 
     /// Gets candles with date bigger or equals specified date
